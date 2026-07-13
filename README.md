@@ -73,6 +73,19 @@ production (`npx wrangler secret put GITHUB_TOKEN`), because
 unauthenticated GitHub API calls share rate limits across Cloudflare's
 egress IPs.
 
+### Deploy with an AI agent
+
+[AGENTS.md](AGENTS.md) has step-by-step instructions written for AI coding
+agents: fork-specific config changes, non-interactive Cloudflare auth, the
+GitHub token secret, and verification checks. Paste this to your agent:
+
+```text
+Fork and deploy https://github.com/hdprajwal/gh-widgets to my Cloudflare
+account. Follow AGENTS.md in the repo root exactly. Ask me for a Cloudflare
+API token for the deploy, and for a fine-grained GitHub token (public repos,
+read-only) for the GITHUB_TOKEN secret.
+```
+
 ## API
 
 ```
