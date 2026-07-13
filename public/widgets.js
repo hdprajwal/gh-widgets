@@ -179,8 +179,41 @@ const WIDGET_MANIFEST = [
 	},
 	{
 		id: 'license',
-		status: 'soon',
-		description: 'License badge for a repository.',
+		status: 'working',
+		description: 'License badge for a GitHub repository.',
+		route: '/github/license.svg',
+		examples: [
+			{
+				alt: 'license badge for this repo',
+				query: 'repo=hdprajwal/gh-widgets',
+			},
+			{
+				alt: 'MIT license badge',
+				query: 'repo=facebook/react',
+			},
+			{
+				alt: 'light mode license badge with label',
+				query: 'repo=cloudflare/workerd&mode=light&label=license',
+			},
+		],
+		params: [
+			{ name: 'repo', values: 'owner/name', desc: 'The GitHub repository. Required.' },
+			{ name: 'icon', values: 'none', desc: 'Set to none to hide the law icon.' },
+			{ name: 'label', values: 'string', desc: 'Text after the icon. Default none.' },
+			{ name: 'mode', values: 'dark | light', desc: 'Color theme. Default dark.' },
+			{ name: 'color', values: 'hex', desc: 'License color, without #. Default purple.' },
+			{ name: 'labelColor', values: 'hex', desc: 'Label color, without #.' },
+			{ name: 'logo', values: 'slug', desc: 'simple-icons slug, replaces the law icon.' },
+			{ name: 'logoColor', values: 'hex', desc: 'Logo fill color, without #. Default 848484.' },
+			{ name: 'bg', values: 'hex', desc: 'Background color override, without #.' },
+		],
+		builder: [
+			{ name: 'repo', type: 'text', value: 'hdprajwal/gh-widgets', wide: true },
+			{ name: 'icon', type: 'text', placeholder: 'none to hide icon' },
+			{ name: 'label', type: 'text', placeholder: 'license' },
+			{ name: 'color', type: 'text', placeholder: 'a78bfa' },
+			{ name: 'bg', type: 'text', placeholder: 'hex, overrides mode' },
+		],
 	},
 	{
 		id: 'release',
