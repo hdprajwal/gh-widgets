@@ -7,6 +7,17 @@
   </picture>
 </p>
 
+<p align="center">
+  <a href="https://astro.build"><picture><source media="(prefers-color-scheme: dark)" srcset="https://gh-widgets.hdprajwal.dev/badge/static.svg?label=built+with&amp;message=astro&amp;logo=astro&amp;logoColor=ff5d01&amp;color=ff5d01&amp;mode=dark" /><img alt="built with astro" src="https://gh-widgets.hdprajwal.dev/badge/static.svg?label=built+with&amp;message=astro&amp;logo=astro&amp;logoColor=ff5d01&amp;color=ff5d01&amp;mode=light" /></picture></a>
+  <a href="https://workers.cloudflare.com"><picture><source media="(prefers-color-scheme: dark)" srcset="https://gh-widgets.hdprajwal.dev/badge/static.svg?label=runs+on&amp;message=cloudflare+workers&amp;logo=cloudflare&amp;logoColor=f38020&amp;color=f38020&amp;mode=dark" /><img alt="runs on cloudflare workers" src="https://gh-widgets.hdprajwal.dev/badge/static.svg?label=runs+on&amp;message=cloudflare+workers&amp;logo=cloudflare&amp;logoColor=f38020&amp;color=f38020&amp;mode=light" /></picture></a>
+  <a href="https://gh-widgets.hdprajwal.dev"><picture><source media="(prefers-color-scheme: dark)" srcset="https://gh-widgets.hdprajwal.dev/badge/static.svg?label=docs&amp;message=live&amp;color=3fb950&amp;mode=dark" /><img alt="docs live" src="https://gh-widgets.hdprajwal.dev/badge/static.svg?label=docs&amp;message=live&amp;color=3fb950&amp;mode=light" /></picture></a>
+  <a href="https://github.com/hdprajwal/gh-widgets/blob/main/LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="https://gh-widgets.hdprajwal.dev/github/license.svg?repo=hdprajwal/gh-widgets&amp;mode=dark" /><img alt="license" src="https://gh-widgets.hdprajwal.dev/github/license.svg?repo=hdprajwal/gh-widgets&amp;mode=light" /></picture></a>
+  <a href="https://github.com/hdprajwal/gh-widgets/stargazers"><picture><source media="(prefers-color-scheme: dark)" srcset="https://gh-widgets.hdprajwal.dev/github/stars.svg?repo=hdprajwal/gh-widgets&amp;mode=dark" /><img alt="stars" src="https://gh-widgets.hdprajwal.dev/github/stars.svg?repo=hdprajwal/gh-widgets&amp;mode=light" /></picture></a>
+</p>
+
+Every image above is rendered by this repo's own worker. More in the
+[examples gallery](https://gh-widgets.hdprajwal.dev/examples).
+
 Self-hosted SVG widgets for GitHub READMEs. One Cloudflare Worker renders
 header images from options you pass in the URL. Graphs, star counts, and more
 are coming later. Your README never depends on someone else's image service.
