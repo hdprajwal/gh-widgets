@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="theme-color" content="#000000" />
+	<meta name="description" content="Fork gh-widgets and run your own README widget service on Cloudflare Workers. Free tier, one deploy command, optional custom domain." />
+	<meta property="og:site_name" content="gh-widgets" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Run your own gh-widgets" />
+	<meta property="og:description" content="Fork the repo, wrangler deploy, done. Your own README widget service on Cloudflare Workers." />
+	<meta property="og:url" content="https://gh-widgets.hdprajwal.dev/self-host" />
+	<title>Run your own · gh-widgets</title>
+	<link rel="icon" href="data:image/svg+xml,%3csvg%20xmlns='http://www.w3.org/2000/svg'%20width='24'%20height='24'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%23ededed'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3e%3crect%20width='18'%20height='18'%20x='3'%20y='3'%20rx='2'%20fill='%23000000'/%3e%3cpath%20d='M3%209h18'/%3e%3c/svg%3e" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+	<nav>
+		<a class="brand" href="/">gh-widgets</a>
+		<div class="links">
+			<a href="/#widgets">Widgets</a>
+			<a href="https://github.com/hdprajwal/gh-widgets" target="_blank" rel="noopener" aria-label="gh-widgets on GitHub">
+				<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+			</a>
+		</div>
+	</nav>
+
+	<main>
+		<a class="back" href="/"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>back to gh-widgets</a>
+		<h1>Run your own</h1>
+		<p class="lede">
+			<span class="ink">gh-widgets</span> is one Cloudflare Worker plus a folder of
+			static files. There is no database, no build step, and no secret to configure.
+			Fork it, deploy it, and your READMEs use a service only you control. It fits
+			easily in Cloudflare's free tier.
+		</p>
+
+		<h2>1. Fork and clone</h2>
+		<p>
+			Fork <a href="https://github.com/hdprajwal/gh-widgets" target="_blank" rel="noopener">hdprajwal/gh-widgets</a>
+			on GitHub, then clone your fork:
+		</p>
+		<pre><code>git clone https://github.com/&lt;you&gt;/gh-widgets
+cd gh-widgets</code></pre>
+
+		<h2>2. Run it locally</h2>
+		<p>
+			The only tool you need is <a href="https://developers.cloudflare.com/workers/wrangler/" target="_blank" rel="noopener">wrangler</a>,
+			Cloudflare's command-line tool for Workers. You can run it through
+			<code>npx</code> without installing anything:
+		</p>
+		<pre><code>npx wrangler dev</code></pre>
+		<p>
+			Open <code>http://localhost:8787/</code> for the landing page, or call the API
+			directly: <code>http://localhost:8787/header/graph.svg?title=hello</code>.
+			Wrangler reloads on its own when you save a file.
+		</p>
+
+		<h2>3. Deploy to Cloudflare</h2>
+		<p>
+			You need a free <a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">Cloudflare account</a>.
+			Before deploying, open <code>wrangler.jsonc</code> and <span class="ink">remove the
+			<code>routes</code> block</span>. It points the worker at this site's domain, which
+			your account does not own:
+		</p>
+		<pre><code><span class="c">// wrangler.jsonc: delete these lines in your fork</span>
+"routes": [
+  { "pattern": "gh-widgets.hdprajwal.dev", "custom_domain": true }
+],</code></pre>
+		<p>Then log in and deploy:</p>
+		<pre><code>npx wrangler login
+npx wrangler deploy</code></pre>
+		<p>
+			The first deploy prints your URL:
+			<code>https://gh-widgets.&lt;your-subdomain&gt;.workers.dev</code>. That is it. The
+			landing page, the builder, and the SVG API are all live.
+		</p>
+
+		<h2>4. Optional: custom domain</h2>
+		<p>
+			If you have a domain on Cloudflare, add the <code>routes</code> block back with
+			your own hostname and deploy again. Cloudflare creates the DNS record and the
+			certificate for you:
+		</p>
+		<pre><code>"routes": [
+  { "pattern": "widgets.example.com", "custom_domain": true }
+],</code></pre>
+
+		<h2>5. Use it in a README</h2>
+		<p>
+			Open your deployed landing page, set up a header in the builder, and copy the
+			<code>&lt;picture&gt;</code> snippet it generates. GitHub shows the dark or light
+			version to match each visitor's theme.
+		</p>
+
+		<h2>Good to know</h2>
+		<ul>
+			<li>
+				<span class="ink">Cost.</span> The free Workers plan includes 100,000 requests
+				a day, and GitHub also caches README images on its own proxy. A personal
+				instance will not get near the limit.
+			</li>
+			<li>
+				<span class="ink">Self-contained.</span> The worker calls no other service,
+				with one exception. The <code>logo</code> parameter fetches an icon from
+				simple-icons through jsDelivr and caches it for 30 days. If you skip
+				<code>logo</code>, nothing external is ever called.
+			</li>
+			<li>
+				<span class="ink">Adding widgets.</span> Write a render function in
+				<code>worker.js</code>, register its route, and describe it in
+				<code>public/widgets.js</code>. The landing page builds its tabs, examples,
+				builder, and API docs from that file.
+			</li>
+			<li>
+				<span class="ink">No tracking.</span> No analytics, no cookies, and no logs of
+				your README traffic beyond Cloudflare's standard request metrics.
+			</li>
+		</ul>
+	</main>
+
+	<footer>
+		<span>self-hosted · no tracking</span>
+		<span>built by <a href="https://hdprajwal.dev" target="_blank" rel="noopener">Prajwal HD</a></span>
+	</footer>
+</body>
+</html>
