@@ -1,0 +1,119 @@
+---
+import Base from '../layouts/Base.astro';
+import { HEADER_EXAMPLES, BADGE_EXAMPLES } from '../data/examples.js';
+import { WIDGET_VERSION } from '../data/widgets.js';
+---
+
+<Base
+	title="Examples · gh-widgets"
+	description="A gallery of headers and badges rendered live by gh-widgets. Click any example for the URL and markdown that reproduce it."
+	path="/examples"
+>
+	<h1>Examples</h1>
+	<p class="lede">
+		Everything below is rendered live by this worker, in the theme you are viewing the site in.
+		Click an example to see the code that generates it.
+	</p>
+
+	<h2>Headers</h2>
+	<div class="gallery gallery-1">
+		{
+			HEADER_EXAMPLES.map((ex) => (
+				<button
+					class="gallery-item"
+					type="button"
+					data-alt={ex.alt}
+					data-route={ex.route}
+					data-query={ex.query}
+				>
+					<img src={`${ex.route}?${ex.query}&v=${WIDGET_VERSION}`} alt={ex.alt} loading="lazy" />
+				</button>
+			))
+		}
+	</div>
+
+	<h2>Badges</h2>
+	<div class="gallery gallery-3">
+		{
+			BADGE_EXAMPLES.map((ex) => (
+				<button
+					class={ex.wide ? 'gallery-item wide' : 'gallery-item'}
+					type="button"
+					data-alt={ex.alt}
+					data-route={ex.route}
+					data-query={ex.query}
+				>
+					<img src={`${ex.route}?${ex.query}&v=${WIDGET_VERSION}`} alt={ex.alt} loading="lazy" />
+				</button>
+			))
+		}
+	</div>
+
+	<dialog id="code-dialog">
+		<div class="dialog-head">
+			<h3 id="dialog-title">example</h3>
+			<button class="copy" id="dialog-close" type="button">close</button>
+		</div>
+		<div class="snippet-head"><span>URL</span><button class="copy" data-copy="dialog-url" type="button">copy</button></div>
+		<pre id="dialog-url"></pre>
+		<div class="snippet-head"><span>Markdown</span><button class="copy" data-copy="dialog-md" type="button">copy</button></div>
+		<pre id="dialog-md"></pre>
+	</dialog>
+</Base>
+
+<script is:inline define:vars={{ version: WIDGET_VERSION }}>
+	(function () {
+		var dialog = document.getElementById('code-dialog');
+		var title = document.getElementById('dialog-title');
+		var urlPre = document.getElementById('dialog-url');
+		var mdPre = document.getElementById('dialog-md');
+		var items = Array.prototype.slice.call(document.querySelectorAll('.gallery-item'));
+
+		function mode() {
+			return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+		}
+
+		// Example images follow the site theme.
+		function sync() {
+			var m = mode();
+			items.forEach(function (item) {
+				item.querySelector('img').src =
+					item.dataset.route + '?' + item.dataset.query + '&mode=' + m + '&v=' + version;
+			});
+		}
+		new MutationObserver(sync).observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['data-theme'],
+		});
+		sync();
+
+		items.forEach(function (item) {
+			item.addEventListener('click', function () {
+				var url = location.origin + item.dataset.route + '?' + item.dataset.query + '&mode=' + mode();
+				title.textContent = item.dataset.alt || 'example';
+				urlPre.textContent = url;
+				mdPre.textContent = '![' + item.dataset.alt + '](' + url + ')';
+				dialog.showModal();
+			});
+		});
+
+		document.getElementById('dialog-close').addEventListener('click', function () {
+			dialog.close();
+		});
+		dialog.addEventListener('click', function (e) {
+			if (e.target === dialog) dialog.close();
+		});
+
+		document.querySelectorAll('[data-copy]').forEach(function (btn) {
+			btn.addEventListener('click', function () {
+				var src = document.getElementById(btn.dataset.copy);
+				navigator.clipboard.writeText(src.textContent || '').then(function () {
+					btn.textContent = 'copied';
+					setTimeout(function () {
+						btn.textContent = 'copy';
+					}, 1200);
+				});
+			});
+		});
+	})();
+</script>

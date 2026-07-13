@@ -120,6 +120,44 @@ td.status.soon { color: var(--ink-faint); }
 @media (max-width: 560px) {
 	.widget-grid { grid-template-columns: repeat(2, 1fr); }
 }
+.gallery { margin-top: 20px; display: grid; gap: 20px; }
+.gallery-1 { grid-template-columns: 1fr; }
+.gallery-3 { grid-template-columns: repeat(3, 1fr); align-items: center; }
+.gallery-item {
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+	justify-self: start;
+	transition: opacity 0.15s;
+}
+.gallery-item:hover { opacity: 0.85; }
+.gallery-item img { display: block; width: auto; max-width: 100%; height: auto; }
+.gallery-1 .gallery-item { justify-self: stretch; }
+.gallery-1 .gallery-item img { width: 100%; }
+.gallery-3 .wide { grid-column: 1 / -1; }
+@media (max-width: 560px) {
+	.gallery-3 { grid-template-columns: repeat(2, 1fr); }
+}
+dialog {
+	margin: auto;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	padding: 20px;
+	width: min(640px, calc(100% - 40px));
+	color: var(--ink-muted);
+}
+dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
+dialog .dialog-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+}
+dialog h3 { font-size: 14px; font-weight: 600; color: var(--ink); }
+dialog pre { white-space: pre-wrap; word-break: break-all; margin-top: 8px; }
+dialog .snippet-head { margin-top: 16px; }
 button.theme-toggle {
 	background: none;
 	border: 0;
