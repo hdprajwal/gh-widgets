@@ -255,7 +255,43 @@ export const WIDGET_MANIFEST = [
 	},
 	{
 		id: 'ci-status',
-		status: 'soon',
-		description: 'Build/CI status badges.',
+		status: 'working',
+		description: 'Latest GitHub Actions run status for a repository.',
+		route: '/github/ci.svg',
+		examples: [
+			{
+				alt: 'latest CI run status',
+				query: 'repo=rust-lang/rust',
+			},
+			{
+				alt: 'status of one workflow file',
+				query: 'repo=withastro/astro&workflow=ci.yml',
+			},
+			{
+				alt: 'light mode with a label and branch filter',
+				query: 'repo=neovim/neovim&branch=master&label=ci&mode=light',
+			},
+		],
+		params: [
+			{ name: 'repo', values: 'owner/name', desc: 'The GitHub repository. Required.' },
+			{ name: 'workflow', values: 'file name', desc: 'Only this workflow, e.g. ci.yml. Default: the latest run of any workflow.' },
+			{ name: 'branch', values: 'string', desc: 'Only runs on this branch.' },
+			{ name: 'icon', values: 'none', desc: 'Set to none to hide the workflow icon.' },
+			{ name: 'label', values: 'string', desc: 'Text after the icon. Default none.' },
+			{ name: 'mode', values: 'dark | light', desc: 'Color theme. Default dark.' },
+			{ name: 'color', values: 'hex', desc: 'Status color override, without #.' },
+			{ name: 'labelColor', values: 'hex', desc: 'Label color, without #.' },
+			{ name: 'logo', values: 'slug', desc: 'simple-icons slug, replaces the workflow icon.' },
+			{ name: 'logoColor', values: 'hex', desc: 'Logo fill color, without #. Default 848484.' },
+			{ name: 'bg', values: 'hex', desc: 'Background color override, without #.' },
+		],
+		builder: [
+			{ name: 'repo', type: 'text', value: 'rust-lang/rust', wide: true },
+			{ name: 'workflow', type: 'text', placeholder: 'ci.yml' },
+			{ name: 'branch', type: 'text', placeholder: 'main' },
+			{ name: 'icon', type: 'text', placeholder: 'none to hide icon' },
+			{ name: 'label', type: 'text', placeholder: 'ci' },
+			{ name: 'bg', type: 'text', placeholder: 'hex, overrides mode' },
+		],
 	},
 ];

@@ -468,6 +468,47 @@ async function releaseWidget(searchParams, ctx, env) {
   return dataBadge(searchParams, ctx, { message: String(data.tag_name).slice(0, 40), color: '3fb950', icon: TAG_ICON });
 }
 
+// GitHub octicon workflow, 16x16 viewBox.
+const WORKFLOW_ICON =
+  'M0 1.75C0 .784.784 0 1.75 0h3.5C6.216 0 7 .784 7 1.75v3.5A1.75 1.75 0 0 1 5.25 7H4v4a1 1 0 0 0 1 1h4v-1.25C9 9.784 9.784 9 10.75 9h3.5c.966 0 1.75.784 1.75 1.75v3.5A1.75 1.75 0 0 1 14.25 16h-3.5A1.75 1.75 0 0 1 9 14.25v-.75H5A2.5 2.5 0 0 1 2.5 11V7h-.75A1.75 1.75 0 0 1 0 5.25Zm1.75-.25a.25.25 0 0 0-.25.25v3.5c0 .138.112.25.25.25h3.5a.25.25 0 0 0 .25-.25v-3.5a.25.25 0 0 0-.25-.25Zm9 9a.25.25 0 0 0-.25.25v3.5c0 .138.112.25.25.25h3.5a.25.25 0 0 0 .25-.25v-3.5a.25.25 0 0 0-.25-.25Z';
+
+const CI_COLORS = {
+  passing: '3fb950',
+  failing: 'f85149',
+  running: '47a8ff',
+};
+
+async function ciWidget(searchParams, ctx, env) {
+  const repo = parseRepoParam(searchParams);
+  if (!repo) {
+    return dataBadge(searchParams, ctx, { message: 'add ?repo=owner/name', color: '8f8f8f', icon: WORKFLOW_ICON });
+  }
+  const workflow = (searchParams.get('workflow') || '').replace(/[^\w.-]/g, '').slice(0, 100);
+  const branch = (searchParams.get('branch') || '').replace(/[^\w./-]/g, '').slice(0, 100);
+  const base = workflow
+    ? `repos/${repo}/actions/workflows/${workflow}/runs`
+    : `repos/${repo}/actions/runs`;
+  const path = `${base}?per_page=1${branch ? `&branch=${branch}` : ''}`;
+
+  // CI state changes fast, so both the API response and the rendered badge
+  // cache for 5 minutes instead of the defaults.
+  const { data, error } = await fetchGitHubJSON(path, env, ctx, 300);
+  if (error) {
+    return { svg: await dataBadge(searchParams, ctx, { message: error, color: '8f8f8f', icon: WORKFLOW_ICON }), ttl: 60 };
+  }
+  const run = data.workflow_runs && data.workflow_runs[0];
+  if (!run) {
+    return { svg: await dataBadge(searchParams, ctx, { message: 'no runs', color: '8f8f8f', icon: WORKFLOW_ICON }), ttl: 300 };
+  }
+  let message;
+  if (run.status !== 'completed') message = 'running';
+  else if (run.conclusion === 'success') message = 'passing';
+  else if (run.conclusion === 'failure') message = 'failing';
+  else message = run.conclusion || 'unknown'; // cancelled, skipped, ...
+  const color = CI_COLORS[message] || '8f8f8f';
+  return { svg: await dataBadge(searchParams, ctx, { message, color, icon: WORKFLOW_ICON }), ttl: 300 };
+}
+
 async function starsWidget(searchParams, ctx, env) {
   const repo = parseRepoParam(searchParams);
   if (!repo) {
@@ -494,6 +535,7 @@ const WIDGETS = {
   'github/stars': starsWidget,
   'github/license': licenseWidget,
   'github/release': releaseWidget,
+  'github/ci': ciWidget,
 };
 
 // ---------------------------------------------------------------------------
