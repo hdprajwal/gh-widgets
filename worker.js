@@ -348,24 +348,31 @@ async function groupWidget(searchParams, ctx) {
 
 /**
  * Fetches a GitHub API path as JSON, cached at the edge for 5 minutes.
- * Set a GITHUB_TOKEN secret (wrangler secret put GITHUB_TOKEN) to raise the
- * API rate limit from 60 to 5000 requests an hour. Returns null on failure.
+ * Returns { data } on success or { error: 'rate limited' | 'unavailable' }.
+ *
+ * Unauthenticated GitHub API calls are limited to 60/hour per IP, and
+ * Cloudflare's egress IPs are shared, so in production a GITHUB_TOKEN
+ * secret (wrangler secret put GITHUB_TOKEN) is effectively required —
+ * it switches the limit to 5000/hour per token.
  */
-async function fetchGitHubJSON(path, env, ctx) {
+async function fetchGitHubJSON(path, env, ctx, ttl = 3600) {
   const url = `https://api.github.com/${path}`;
   try {
     const cache = caches.default;
     const key = new Request(url);
     const hit = await cache.match(key);
-    if (hit) return hit.json();
+    if (hit) return { data: await hit.json() };
 
     const headers = {
       'user-agent': 'gh-widgets (https://github.com/hdprajwal/gh-widgets)',
       accept: 'application/vnd.github+json',
     };
     if (env && env.GITHUB_TOKEN) headers.authorization = `Bearer ${env.GITHUB_TOKEN}`;
-    const res = await fetch(url, { headers });
-    if (!res.ok) return null;
+    // Fail fast on a hung upstream: README image proxies time out and show
+    // a broken image, so a quick fallback badge beats a slow perfect one.
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
+    if (res.status === 403 || res.status === 429) return { error: 'rate limited' };
+    if (!res.ok) return { error: 'unavailable' };
 
     const body = await res.text();
     ctx.waitUntil(
@@ -374,14 +381,14 @@ async function fetchGitHubJSON(path, env, ctx) {
         new Response(body, {
           headers: {
             'content-type': 'application/json',
-            'cache-control': 'public, max-age=300, s-maxage=300',
+            'cache-control': `public, max-age=${ttl}, s-maxage=${ttl}`,
           },
         })
       )
     );
-    return JSON.parse(body);
+    return { data: JSON.parse(body) };
   } catch {
-    return null;
+    return { error: 'unavailable' };
   }
 }
 
@@ -430,21 +437,46 @@ const LAW_ICON =
 
 async function licenseWidget(searchParams, ctx, env) {
   const repo = parseRepoParam(searchParams);
-  const data = repo ? await fetchGitHubJSON(`repos/${repo}`, env, ctx) : null;
-  if (!data) {
-    return dataBadge(searchParams, ctx, { message: repo ? 'unavailable' : 'add ?repo=owner/name', color: '8f8f8f', icon: LAW_ICON });
+  if (!repo) {
+    return dataBadge(searchParams, ctx, { message: 'add ?repo=owner/name', color: '8f8f8f', icon: LAW_ICON });
+  }
+  const { data, error } = await fetchGitHubJSON(`repos/${repo}`, env, ctx);
+  if (error) {
+    return { svg: await dataBadge(searchParams, ctx, { message: error, color: '8f8f8f', icon: LAW_ICON }), ttl: 60 };
   }
   const spdx = data.license && data.license.spdx_id;
   const message = !spdx ? 'no license' : spdx === 'NOASSERTION' ? 'custom' : spdx;
   return dataBadge(searchParams, ctx, { message, color: spdx && spdx !== 'NOASSERTION' ? 'a78bfa' : '8f8f8f', icon: LAW_ICON });
 }
 
+// GitHub octicon tag, 16x16 viewBox.
+const TAG_ICON =
+  'M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 0 1 0 2.474l-5.026 5.026a1.75 1.75 0 0 1-2.474 0l-6.25-6.25A1.752 1.752 0 0 1 1 7.775Zm1.5 0c0 .066.026.13.073.177l6.25 6.25a.25.25 0 0 0 .354 0l5.025-5.025a.25.25 0 0 0 0-.354l-6.25-6.25a.25.25 0 0 0-.177-.073H2.75a.25.25 0 0 0-.25.25ZM6 5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z';
+
+async function releaseWidget(searchParams, ctx, env) {
+  const repo = parseRepoParam(searchParams);
+  if (!repo) {
+    return dataBadge(searchParams, ctx, { message: 'add ?repo=owner/name', color: '8f8f8f', icon: TAG_ICON });
+  }
+  const { data, error } = await fetchGitHubJSON(`repos/${repo}/releases/latest`, env, ctx, 900);
+  if (error === 'rate limited') {
+    return { svg: await dataBadge(searchParams, ctx, { message: error, color: '8f8f8f', icon: TAG_ICON }), ttl: 60 };
+  }
+  if (error || !data.tag_name) {
+    return dataBadge(searchParams, ctx, { message: 'no releases', color: '8f8f8f', icon: TAG_ICON });
+  }
+  return dataBadge(searchParams, ctx, { message: String(data.tag_name).slice(0, 40), color: '3fb950', icon: TAG_ICON });
+}
+
 async function starsWidget(searchParams, ctx, env) {
   const repo = parseRepoParam(searchParams);
-  const data = repo ? await fetchGitHubJSON(`repos/${repo}`, env, ctx) : null;
-  const count = data ? formatCount(data.stargazers_count) : null;
+  if (!repo) {
+    return dataBadge(searchParams, ctx, { message: 'add ?repo=owner/name', color: '8f8f8f', icon: STAR_ICON });
+  }
+  const { data, error } = await fetchGitHubJSON(`repos/${repo}`, env, ctx);
+  const count = error ? null : formatCount(data.stargazers_count);
   if (count === null) {
-    return dataBadge(searchParams, ctx, { message: repo ? 'unavailable' : 'add ?repo=owner/name', color: '8f8f8f', icon: STAR_ICON });
+    return { svg: await dataBadge(searchParams, ctx, { message: error || 'unavailable', color: '8f8f8f', icon: STAR_ICON }), ttl: 60 };
   }
   return dataBadge(searchParams, ctx, { message: count, color: 'eac54f', icon: STAR_ICON });
 }
@@ -461,11 +493,18 @@ const WIDGETS = {
   'group/badges': groupWidget,
   'github/stars': starsWidget,
   'github/license': licenseWidget,
+  'github/release': releaseWidget,
 };
 
 // ---------------------------------------------------------------------------
 // Router — static assets in ./public are served before this handler runs.
+//
+// Rendered images are cached at the edge by full URL for CACHE_TTL seconds.
+// Widgets return either an svg string, or { svg, ttl } to shorten caching
+// (error badges use a short ttl so they recover quickly).
 // ---------------------------------------------------------------------------
+
+const CACHE_TTL = 1800; // 30 minutes
 
 export default {
   async fetch(request, env, ctx) {
@@ -474,20 +513,33 @@ export default {
     const m = url.pathname.match(/^\/([a-z-]+)\/([a-z-]+)\.svg$/);
     const widget = m && WIDGETS[`${m[1]}/${m[2]}`];
     if (widget) {
+      const cache = caches.default;
+      const cacheKey = new Request(url.toString());
+      if (request.method === 'GET') {
+        const cached = await cache.match(cacheKey);
+        if (cached) return cached;
+      }
+
       // Tolerate HTML-escaped URLs pasted from README snippets, where every
       // "&" arrives as "&amp;" and param names come through as "amp;title".
       const params = new URLSearchParams();
       for (const [k, v] of url.searchParams) {
         params.append(k.replace(/^amp;/, ''), v);
       }
-      const svg = await widget(params, ctx, env);
-      return new Response(svg, {
+      let result = await widget(params, ctx, env);
+      if (typeof result === 'string') result = { svg: result };
+      const ttl = result.ttl || CACHE_TTL;
+      const response = new Response(result.svg, {
         headers: {
           'content-type': 'image/svg+xml; charset=utf-8',
-          'cache-control': 'public, max-age=86400, s-maxage=604800',
+          'cache-control': `public, max-age=${ttl}, s-maxage=${ttl}`,
           'access-control-allow-origin': '*',
         },
       });
+      if (request.method === 'GET') {
+        ctx.waitUntil(cache.put(cacheKey, response.clone()));
+      }
+      return response;
     }
 
     return new Response('Not found', { status: 404 });

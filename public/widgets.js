@@ -217,8 +217,41 @@ const WIDGET_MANIFEST = [
 	},
 	{
 		id: 'release',
-		status: 'soon',
-		description: 'Latest-release badge for a repository.',
+		status: 'working',
+		description: 'Latest-release badge for a GitHub repository.',
+		route: '/github/release.svg',
+		examples: [
+			{
+				alt: 'latest release badge',
+				query: 'repo=hdprajwal/codexpass',
+			},
+			{
+				alt: 'latest release with the GitHub logo',
+				query: 'repo=cloudflare/workerd&logo=github',
+			},
+			{
+				alt: 'light mode release badge with label',
+				query: 'repo=neovim/neovim&mode=light&label=release',
+			},
+		],
+		params: [
+			{ name: 'repo', values: 'owner/name', desc: 'The GitHub repository. Required.' },
+			{ name: 'icon', values: 'none', desc: 'Set to none to hide the tag icon.' },
+			{ name: 'label', values: 'string', desc: 'Text after the icon. Default none.' },
+			{ name: 'mode', values: 'dark | light', desc: 'Color theme. Default dark.' },
+			{ name: 'color', values: 'hex', desc: 'Version color, without #. Default green.' },
+			{ name: 'labelColor', values: 'hex', desc: 'Label color, without #.' },
+			{ name: 'logo', values: 'slug', desc: 'simple-icons slug, replaces the tag icon.' },
+			{ name: 'logoColor', values: 'hex', desc: 'Logo fill color, without #. Default 848484.' },
+			{ name: 'bg', values: 'hex', desc: 'Background color override, without #.' },
+		],
+		builder: [
+			{ name: 'repo', type: 'text', value: 'hdprajwal/codexpass', wide: true },
+			{ name: 'icon', type: 'text', placeholder: 'none to hide icon' },
+			{ name: 'label', type: 'text', placeholder: 'release' },
+			{ name: 'color', type: 'text', placeholder: '3fb950' },
+			{ name: 'bg', type: 'text', placeholder: 'hex, overrides mode' },
+		],
 	},
 	{
 		id: 'ci-status',

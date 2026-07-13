@@ -64,8 +64,9 @@ GET /header/graph.svg
 | `bg`        | hex (no `#`)                 | Background color override.                                |
 | `fg`        | hex (no `#`)                 | Text color override.                                      |
 
-Responses are SVG images, cached on Cloudflare's edge for a day, and usable
-from any site.
+Responses are SVG images, cached on Cloudflare's edge for 30 minutes per
+URL, and usable from any site. Error badges cache for one minute so they
+recover quickly.
 
 ### README snippet, auto dark/light
 
