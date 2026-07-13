@@ -93,19 +93,16 @@ export const BADGE_EXAMPLES = [
 	},
 	{
 		alt: 'Group: build, version, license',
-		wide: true,
 		route: '/group/badges.svg',
 		query: 'b=label:build|message:passing|color:3fb950&b=label:version|message:v1.2.0&b=label:license|message:Apache-2.0|color:a78bfa',
 	},
 	{
 		alt: 'Group with logos',
-		wide: true,
 		route: '/group/badges.svg',
 		query: 'b=logo:cloudflare|logoColor:f38020|label:runs+on|message:workers&b=logo:github|label:source|message:gh-widgets',
 	},
 	{
 		alt: 'Group of two',
-		wide: true,
 		route: '/group/badges.svg',
 		query: 'b=label:build|message:passing|color:16a34a&b=label:docs|message:live',
 	},
@@ -133,5 +130,15 @@ export const BADGE_EXAMPLES = [
 		alt: 'Latest release',
 		route: '/github/release.svg',
 		query: 'repo=hdprajwal/codexpass',
+	},
+	{
+		alt: 'CI status',
+		route: '/github/ci.svg',
+		query: 'repo=withastro/astro&workflow=ci.yml',
+	},
+	{
+		alt: 'CI status with a label',
+		route: '/github/ci.svg',
+		query: 'repo=rust-lang/rust&label=ci',
 	},
 ];
