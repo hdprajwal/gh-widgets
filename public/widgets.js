@@ -8,6 +8,10 @@
 //
 // Builder field types: 'text', 'number', 'select' (needs options).
 
+// Bump this whenever a widget's rendering changes. It is appended to the
+// example and preview image URLs so browsers do not show stale cached SVGs.
+const WIDGET_VERSION = '3';
+
 const WIDGET_MANIFEST = [
 	{
 		id: 'header',
@@ -105,8 +109,33 @@ const WIDGET_MANIFEST = [
 	},
 	{
 		id: 'group',
-		status: 'soon',
-		description: 'Several badges side by side in one image.',
+		status: 'working',
+		description: 'Several badges in one pill, separated by dividers.',
+		route: '/group/badges.svg',
+		examples: [
+			{
+				alt: 'three badges in one image',
+				query: 'b=label:build|message:passing|color:3fb950&b=label:version|message:v1.2.0&b=label:license|message:Apache-2.0|color:a78bfa',
+			},
+			{
+				alt: 'badges with logos',
+				query: 'b=logo:cloudflare|logoColor:f38020|label:runs+on|message:workers&b=logo:github|label:source|message:gh-widgets',
+			},
+			{
+				alt: 'light mode group',
+				query: 'mode=light&b=label:build|message:passing|color:16a34a&b=label:docs|message:live',
+			},
+		],
+		params: [
+			{ name: 'b', values: 'key:value|key:value', desc: 'One segment. Repeat b for more, up to 8. Keys are the same options /badge/static.svg takes: label, message, color, labelColor, logo, logoColor.' },
+			{ name: 'mode', values: 'dark | light', desc: 'Color theme for the whole pill. Default dark.' },
+			{ name: 'bg', values: 'hex', desc: 'Pill background override, without #.' },
+		],
+		builder: [
+			{ name: 'b', label: 'segment 1', type: 'text', value: 'label:build|message:passing|color:3fb950', wide: true },
+			{ name: 'b', label: 'segment 2', type: 'text', value: 'label:version|message:v1.2.0', wide: true },
+			{ name: 'b', label: 'segment 3', type: 'text', placeholder: 'label:license|message:Apache-2.0', wide: true },
+		],
 	},
 	{
 		id: 'stars',

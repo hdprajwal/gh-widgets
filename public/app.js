@@ -55,14 +55,14 @@
 				(f.value ? ' value="' + escHtml(f.value) + '"' : '') +
 				(f.placeholder ? ' placeholder="' + escHtml(f.placeholder) + '"' : '') + ' />';
 		}
-		return '<label' + (f.wide ? ' class="wide"' : '') + '>' + escHtml(f.name) + ' ' + inner + '</label>';
+		return '<label' + (f.wide ? ' class="wide"' : '') + '>' + escHtml(f.label || f.name) + ' ' + inner + '</label>';
 	}
 
 	function panelHtml(w) {
 		var examples = w.examples.map(function (ex) {
 			var url = w.route + '?' + ex.query;
 			return '<div class="example">' +
-				'<img src="' + escHtml(url) + '" alt="' + escHtml(ex.alt) + '" loading="lazy" />' +
+				'<img src="' + escHtml(url + '&v=' + WIDGET_VERSION) + '" alt="' + escHtml(ex.alt) + '" loading="lazy" />' +
 				'<pre><code>' + escHtml(url) + '</code></pre></div>';
 		}).join('');
 
@@ -98,10 +98,8 @@
 		var t;
 
 		function build(mode) {
-			var p = new URLSearchParams(new FormData(form));
-			var drop = [];
-			p.forEach(function (v, k) { if (!v) drop.push(k); });
-			drop.forEach(function (k) { p.delete(k); });
+			var p = new URLSearchParams();
+			new FormData(form).forEach(function (v, k) { if (v) p.append(k, v); });
 			p.set('mode', mode);
 			return location.origin + w.route + '?' + p.toString();
 		}
@@ -109,8 +107,8 @@
 		function update() {
 			var dark = build('dark');
 			var light = build('light');
-			darkImg.src = dark;
-			lightImg.src = light;
+			darkImg.src = dark + '&v=' + WIDGET_VERSION;
+			lightImg.src = light + '&v=' + WIDGET_VERSION;
 			var title = new FormData(form).get('title') || w.id;
 			snippet.textContent =
 				'<p align="center">\n' +
