@@ -1,4 +1,11 @@
-# gh-widgets
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)"
+            srcset="https://gh-widgets.hdprajwal.dev/header/graph.svg?title=gh-widgets&amp;subtitle=Self-hosted+SVG+widgets+for+GitHub+READMEs&amp;font=geist-mono&amp;border=false&amp;mode=dark" />
+    <img alt="gh-widgets: self-hosted SVG widgets for GitHub READMEs"
+         src="https://gh-widgets.hdprajwal.dev/header/graph.svg?title=gh-widgets&amp;subtitle=Self-hosted+SVG+widgets+for+GitHub+READMEs&amp;font=geist-mono&amp;border=false&amp;mode=light" />
+  </picture>
+</p>
 
 Self-hosted SVG widgets for GitHub READMEs. One Cloudflare Worker renders
 header images from options you pass in the URL. Graphs, star counts, and more
