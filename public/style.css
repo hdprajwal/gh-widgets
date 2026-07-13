@@ -73,7 +73,7 @@ pre {
 pre code { font-size: 12px; color: inherit; }
 pre .c { color: var(--ink-faint); }
 .example { margin-top: 20px; }
-.example img { display: block; width: 100%; height: auto; border-radius: 12px; }
+.example img { display: block; width: auto; max-width: 100%; height: auto; }
 .example pre { margin-top: 8px; white-space: pre-wrap; word-break: break-all; }
 .table-wrap { margin-top: 12px; overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
 table {
@@ -95,8 +95,10 @@ td.status.soon { color: var(--ink-faint); }
 .tabs {
 	margin-top: 48px;
 	display: flex;
-	gap: 24px;
+	flex-wrap: wrap;
+	gap: 12px 24px;
 }
+.tab { white-space: nowrap; }
 .tab {
 	background: none;
 	border: 0;
@@ -111,8 +113,7 @@ td.status.soon { color: var(--ink-faint); }
 }
 .tab:hover:not(:disabled) { color: var(--ink); }
 .tab.active { color: var(--ink); border-bottom-color: var(--ink); }
-.tab:disabled { cursor: default; color: var(--ink-faint); }
-.tab .soon-tag { margin-left: 6px; font-size: 11px; font-weight: 400; color: var(--ink-faint); }
+.tab:disabled { cursor: default; color: #4d4d4d; }
 .tab-panel { display: block; }
 .tab-panel[hidden] { display: none; }
 form.builder {
@@ -144,8 +145,8 @@ form.builder input, form.builder select {
 }
 form.builder input:focus, form.builder select:focus { outline: none; border-color: #3a3a3a; }
 form.builder .wide { grid-column: 1 / -1; }
-.preview { margin-top: 12px; display: grid; gap: 12px; }
-.preview img { display: block; width: 100%; height: auto; border-radius: 12px; }
+.preview { margin-top: 12px; display: grid; gap: 12px; justify-items: start; }
+.preview img { display: block; width: auto; max-width: 100%; height: auto; }
 .snippet-head { margin-top: 20px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .snippet-head span { font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; color: var(--ink-subtle); }
 button.copy {

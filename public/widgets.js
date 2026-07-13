@@ -61,9 +61,67 @@ const WIDGET_MANIFEST = [
 		],
 	},
 	{
+		id: 'badge',
+		status: 'working',
+		description: 'Static badges with a label, a message, and a color.',
+		route: '/badge/static.svg',
+		examples: [
+			{
+				alt: 'build passing badge',
+				query: 'label=build&message=passing&color=3fb950',
+			},
+			{
+				alt: 'version badge',
+				query: 'label=version&message=v1.2.0',
+			},
+			{
+				alt: 'badge with a logo',
+				query: 'label=runs+on&message=cloudflare+workers&logo=cloudflare&logoColor=f38020',
+			},
+			{
+				alt: 'light mode badge',
+				query: 'label=license&message=Apache-2.0&mode=light&color=a78bfa',
+			},
+		],
+		params: [
+			{ name: 'label', values: 'string', desc: 'Left text, muted. Optional, max 40 chars.' },
+			{ name: 'message', values: 'string', desc: 'Right text, colored. Max 60 chars.' },
+			{ name: 'mode', values: 'dark | light', desc: 'Color theme. Default dark.' },
+			{ name: 'color', values: 'hex', desc: 'Message color, without #. Default blue.' },
+			{ name: 'labelColor', values: 'hex', desc: 'Label color, without #.' },
+			{ name: 'logo', values: 'slug', desc: 'simple-icons slug, drawn before the label.' },
+			{ name: 'logoColor', values: 'hex', desc: 'Logo fill color, without #. Default 848484.' },
+			{ name: 'bg', values: 'hex', desc: 'Background color override, without #.' },
+		],
+		builder: [
+			{ name: 'label', type: 'text', value: 'build', wide: true },
+			{ name: 'message', type: 'text', value: 'passing', wide: true },
+			{ name: 'color', type: 'text', placeholder: '3fb950' },
+			{ name: 'labelColor', type: 'text', placeholder: 'hex, optional' },
+			{ name: 'logo', type: 'text', placeholder: 'simple-icons slug' },
+			{ name: 'logoColor', type: 'text', placeholder: '848484' },
+			{ name: 'bg', type: 'text', placeholder: 'hex, overrides mode' },
+		],
+	},
+	{
+		id: 'group',
+		status: 'soon',
+		description: 'Several badges side by side in one image.',
+	},
+	{
 		id: 'stars',
 		status: 'soon',
-		description: 'Star-count badges for a repository.',
+		description: 'Star-count badge for a repository.',
+	},
+	{
+		id: 'license',
+		status: 'soon',
+		description: 'License badge for a repository.',
+	},
+	{
+		id: 'release',
+		status: 'soon',
+		description: 'Latest-release badge for a repository.',
 	},
 	{
 		id: 'ci-status',

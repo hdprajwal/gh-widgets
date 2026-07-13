@@ -23,8 +23,8 @@
 	var tabs = document.getElementById('tabs');
 	tabs.innerHTML = WIDGET_MANIFEST.map(function (w, i) {
 		if (w.status !== 'working') {
-			return '<button class="tab" role="tab" aria-selected="false" disabled>' +
-				escHtml(w.id) + '<span class="soon-tag">soon</span></button>';
+			return '<button class="tab" role="tab" aria-selected="false" disabled title="coming soon">' +
+				escHtml(w.id) + '</button>';
 		}
 		var active = w.id === live[0].id;
 		return '<button class="tab' + (active ? ' active' : '') + '" role="tab" aria-selected="' +

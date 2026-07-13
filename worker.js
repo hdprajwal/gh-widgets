@@ -188,6 +188,97 @@ async function headerWidget(searchParams, ctx) {
 }
 
 // ---------------------------------------------------------------------------
+// Widget: badge (static)
+// ---------------------------------------------------------------------------
+
+const BADGE_THEMES = {
+  dark: {
+    bg: '#0e0e0e',
+    border: '#27272a',
+    label: '#a0a0a0',
+    message: '#47a8ff',
+    logo: '#848484',
+  },
+  light: {
+    bg: '#ffffff',
+    border: '#e4e4e7',
+    label: '#71717a',
+    message: '#2563eb',
+    logo: '#848484',
+  },
+};
+
+export function parseBadgeParams(searchParams) {
+  const q = (k) => searchParams.get(k) || '';
+  const mode = q('mode') === 'light' ? 'light' : 'dark';
+  const theme = BADGE_THEMES[mode];
+  return {
+    label: q('label').slice(0, 40),
+    message: q('message').slice(0, 60) || 'message',
+    mode,
+    color: hexColor(q('color'), theme.message),
+    labelColor: hexColor(q('labelColor'), theme.label),
+    logo: (q('logo') || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 60),
+    logoColor: hexColor(q('logoColor'), theme.logo),
+    bg: hexColor(q('bg'), theme.bg),
+    borderColor: theme.border,
+  };
+}
+
+/**
+ * Builds one badge as an SVG fragment at origin, plus its width, so the
+ * group widget can compose several into a single image.
+ */
+export function buildBadge(p, logoPath) {
+  const h = 28;
+  const fontSize = 12;
+  const charW = fontSize * 0.62; // Geist Mono advance width, approximate
+  const padX = 10;
+  const gap = 8;
+  const logoSize = 14;
+
+  const labelW = p.label.length * charW;
+  const messageW = p.message.length * charW;
+  const logoW = logoPath ? logoSize + 6 : 0;
+  const w = Math.round(padX + logoW + (p.label ? labelW + gap : 0) + messageW + padX);
+
+  const textY = h / 2 + fontSize * 0.36;
+  const font = FONTS['geist-mono'];
+
+  let x = padX;
+  let parts = '';
+  if (logoPath) {
+    parts += `<g transform="translate(${x}, ${(h - logoSize) / 2}) scale(${logoSize / 24})"><path d="${logoPath}" fill="${p.logoColor}" /></g>`;
+    x += logoSize + 6;
+  }
+  if (p.label) {
+    parts += `<text x="${x}" y="${textY.toFixed(2)}" font-size="${fontSize}" fill="${p.labelColor}" font-family="${font}">${esc(p.label)}</text>`;
+    x += labelW + gap;
+  }
+  parts += `<text x="${x}" y="${textY.toFixed(2)}" font-size="${fontSize}" font-weight="500" fill="${p.color}" font-family="${font}">${esc(p.message)}</text>`;
+
+  const group =
+    `<rect x="0.5" y="0.5" width="${w - 1}" height="${h - 1}" rx="6" fill="${p.bg}" stroke="${p.borderColor}" stroke-width="1" />` +
+    parts;
+
+  return { width: w, height: h, group };
+}
+
+export function renderBadgeSVG(p, logoPath) {
+  const b = buildBadge(p, logoPath);
+  const label = p.label ? `${p.label}: ${p.message}` : p.message;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${b.width}" height="${b.height}" viewBox="0 0 ${b.width} ${b.height}" role="img" aria-label="${esc(label)}">
+  ${b.group}
+</svg>`;
+}
+
+async function staticBadgeWidget(searchParams, ctx) {
+  const p = parseBadgeParams(searchParams);
+  const logoPath = await fetchLogoPath(p.logo, ctx);
+  return renderBadgeSVG(p, logoPath);
+}
+
+// ---------------------------------------------------------------------------
 // Widget registry — add new widgets here.
 // Key is "<widget>/<variant>" matching the URL /<widget>/<variant>.svg
 // Value is async (searchParams, ctx) => svg string.
@@ -195,8 +286,7 @@ async function headerWidget(searchParams, ctx) {
 
 const WIDGETS = {
   'header/graph': headerWidget,
-  // 'stars/badge': starsWidget,
-  // 'graph/activity': activityGraphWidget,
+  'badge/static': staticBadgeWidget,
 };
 
 // ---------------------------------------------------------------------------
