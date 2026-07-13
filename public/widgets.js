@@ -10,7 +10,7 @@
 
 // Bump this whenever a widget's rendering changes. It is appended to the
 // example and preview image URLs so browsers do not show stale cached SVGs.
-const WIDGET_VERSION = '3';
+const WIDGET_VERSION = '4';
 
 const WIDGET_MANIFEST = [
 	{
@@ -139,8 +139,43 @@ const WIDGET_MANIFEST = [
 	},
 	{
 		id: 'stars',
-		status: 'soon',
-		description: 'Star-count badge for a repository.',
+		status: 'working',
+		description: 'Star-count badge for a GitHub repository.',
+		route: '/github/stars.svg',
+		examples: [
+			{
+				alt: 'stars badge for this repo',
+				query: 'repo=hdprajwal/gh-widgets',
+			},
+			{
+				alt: 'stars badge with a logo',
+				query: 'repo=cloudflare/workerd&logo=github',
+			},
+			{
+				alt: 'light mode stars badge',
+				query: 'repo=openai/codex&mode=light',
+			},
+		],
+		params: [
+			{ name: 'repo', values: 'owner/name', desc: 'The GitHub repository. Required.' },
+			{ name: 'icon', values: 'none', desc: 'Set to none to hide the star icon.' },
+			{ name: 'label', values: 'string', desc: 'Text after the star icon. Default none.' },
+			{ name: 'mode', values: 'dark | light', desc: 'Color theme. Default dark.' },
+			{ name: 'color', values: 'hex', desc: 'Count color, without #. Default star yellow.' },
+			{ name: 'labelColor', values: 'hex', desc: 'Label color, without #.' },
+			{ name: 'logo', values: 'slug', desc: 'simple-icons slug, drawn before the label.' },
+			{ name: 'logoColor', values: 'hex', desc: 'Logo fill color, without #. Default 848484.' },
+			{ name: 'bg', values: 'hex', desc: 'Background color override, without #.' },
+		],
+		builder: [
+			{ name: 'repo', type: 'text', value: 'hdprajwal/gh-widgets', wide: true },
+			{ name: 'icon', type: 'text', placeholder: 'none to hide star' },
+			{ name: 'label', type: 'text', placeholder: 'stars' },
+			{ name: 'color', type: 'text', placeholder: 'eac54f' },
+			{ name: 'logo', type: 'text', placeholder: 'github' },
+			{ name: 'logoColor', type: 'text', placeholder: '848484' },
+			{ name: 'bg', type: 'text', placeholder: 'hex, overrides mode' },
+		],
 	},
 	{
 		id: 'license',

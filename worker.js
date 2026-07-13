@@ -233,7 +233,7 @@ const BADGE_PAD_X = 10;
  * without a pill around it, so the group widget can put several segments
  * inside a single pill.
  */
-export function buildBadgeContent(p, logoPath) {
+export function buildBadgeContent(p, logoPath, logoViewBox = 24) {
   const h = BADGE_H;
   const fontSize = 12;
   const charW = fontSize * 0.62; // Geist Mono advance width, approximate
@@ -246,7 +246,7 @@ export function buildBadgeContent(p, logoPath) {
   let x = 0;
   let parts = '';
   if (logoPath) {
-    parts += `<g transform="translate(${x}, ${(h - logoSize) / 2}) scale(${logoSize / 24})"><path d="${logoPath}" fill="${p.logoColor}" /></g>`;
+    parts += `<g transform="translate(${x}, ${(h - logoSize) / 2}) scale(${logoSize / logoViewBox})"><path d="${logoPath}" fill="${p.logoColor}" /></g>`;
     x += logoSize + 6;
   }
   if (p.label) {
@@ -260,8 +260,8 @@ export function buildBadgeContent(p, logoPath) {
 }
 
 /** One badge content wrapped in its own pill, at origin. */
-export function buildBadge(p, logoPath) {
-  const c = buildBadgeContent(p, logoPath);
+export function buildBadge(p, logoPath, logoViewBox = 24) {
+  const c = buildBadgeContent(p, logoPath, logoViewBox);
   const w = Math.round(c.width + BADGE_PAD_X * 2);
   const group =
     `<rect x="0.5" y="0.5" width="${w - 1}" height="${BADGE_H - 1}" rx="6" fill="${p.bg}" stroke="${p.borderColor}" stroke-width="1" />` +
@@ -269,8 +269,8 @@ export function buildBadge(p, logoPath) {
   return { width: w, height: BADGE_H, group };
 }
 
-export function renderBadgeSVG(p, logoPath) {
-  const b = buildBadge(p, logoPath);
+export function renderBadgeSVG(p, logoPath, logoViewBox = 24) {
+  const b = buildBadge(p, logoPath, logoViewBox);
   const label = p.label ? `${p.label}: ${p.message}` : p.message;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${b.width}" height="${b.height}" viewBox="0 0 ${b.width} ${b.height}" role="img" aria-label="${esc(label)}">
   ${b.group}
@@ -343,6 +343,98 @@ async function groupWidget(searchParams, ctx) {
 }
 
 // ---------------------------------------------------------------------------
+// Widget: GitHub stars
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetches a GitHub API path as JSON, cached at the edge for 5 minutes.
+ * Set a GITHUB_TOKEN secret (wrangler secret put GITHUB_TOKEN) to raise the
+ * API rate limit from 60 to 5000 requests an hour. Returns null on failure.
+ */
+async function fetchGitHubJSON(path, env, ctx) {
+  const url = `https://api.github.com/${path}`;
+  try {
+    const cache = caches.default;
+    const key = new Request(url);
+    const hit = await cache.match(key);
+    if (hit) return hit.json();
+
+    const headers = {
+      'user-agent': 'gh-widgets (https://github.com/hdprajwal/gh-widgets)',
+      accept: 'application/vnd.github+json',
+    };
+    if (env && env.GITHUB_TOKEN) headers.authorization = `Bearer ${env.GITHUB_TOKEN}`;
+    const res = await fetch(url, { headers });
+    if (!res.ok) return null;
+
+    const body = await res.text();
+    ctx.waitUntil(
+      cache.put(
+        key,
+        new Response(body, {
+          headers: {
+            'content-type': 'application/json',
+            'cache-control': 'public, max-age=300, s-maxage=300',
+          },
+        })
+      )
+    );
+    return JSON.parse(body);
+  } catch {
+    return null;
+  }
+}
+
+export function formatCount(n) {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return null;
+  if (n < 1000) return String(n);
+  if (n < 1000000) return (n / 1000).toFixed(n < 10000 ? 1 : 0).replace(/\.0$/, '') + 'k';
+  return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+}
+
+function parseRepoParam(searchParams) {
+  const repo = (searchParams.get('repo') || '').trim();
+  return /^[\w.-]+\/[\w.-]+$/.test(repo) ? repo : null;
+}
+
+// GitHub octicon star (filled), 16x16 viewBox.
+const STAR_ICON =
+  'M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z';
+
+/**
+ * Renders a badge whose message comes from data, reusing the badge params.
+ * `icon` is a built-in 16x16 path drawn when the user sets no logo; it
+ * inherits the message color unless logoColor is given.
+ */
+async function dataBadge(searchParams, ctx, { label, message, color, icon }) {
+  const params = new URLSearchParams(searchParams);
+  params.set('message', message);
+  if (label && !params.get('label')) params.set('label', label);
+  if (color && !params.get('color')) params.set('color', color);
+  const iconParam = searchParams.get('icon');
+  if (iconParam === 'none' || iconParam === 'false') icon = null;
+  const p = parseBadgeParams(params);
+  let logoPath = await fetchLogoPath(p.logo, ctx);
+  let logoViewBox = 24;
+  if (!logoPath && icon) {
+    logoPath = icon;
+    logoViewBox = 16;
+    if (!searchParams.get('logoColor')) p.logoColor = p.color;
+  }
+  return renderBadgeSVG(p, logoPath, logoViewBox);
+}
+
+async function starsWidget(searchParams, ctx, env) {
+  const repo = parseRepoParam(searchParams);
+  const data = repo ? await fetchGitHubJSON(`repos/${repo}`, env, ctx) : null;
+  const count = data ? formatCount(data.stargazers_count) : null;
+  if (count === null) {
+    return dataBadge(searchParams, ctx, { message: repo ? 'unavailable' : 'add ?repo=owner/name', color: '8f8f8f', icon: STAR_ICON });
+  }
+  return dataBadge(searchParams, ctx, { message: count, color: 'eac54f', icon: STAR_ICON });
+}
+
+// ---------------------------------------------------------------------------
 // Widget registry — add new widgets here.
 // Key is "<widget>/<variant>" matching the URL /<widget>/<variant>.svg
 // Value is async (searchParams, ctx) => svg string.
@@ -352,6 +444,7 @@ const WIDGETS = {
   'header/graph': headerWidget,
   'badge/static': staticBadgeWidget,
   'group/badges': groupWidget,
+  'github/stars': starsWidget,
 };
 
 // ---------------------------------------------------------------------------
@@ -371,7 +464,7 @@ export default {
       for (const [k, v] of url.searchParams) {
         params.append(k.replace(/^amp;/, ''), v);
       }
-      const svg = await widget(params, ctx);
+      const svg = await widget(params, ctx, env);
       return new Response(svg, {
         headers: {
           'content-type': 'image/svg+xml; charset=utf-8',
