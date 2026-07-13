@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import Examples from '../../components/Examples.astro';
+import Builder from '../../components/Builder.astro';
+import ParamsTable from '../../components/ParamsTable.astro';
+import { WIDGET_MANIFEST } from '../../data/widgets.js';
+
+export function getStaticPaths() {
+	return WIDGET_MANIFEST.filter((w) => w.status === 'working').map((w) => ({
+		params: { id: w.id },
+		props: { widget: w },
+	}));
+}
+
+const { widget } = Astro.props;
+---
+
+<Base
+	title={`${widget.id} · gh-widgets`}
+	description={widget.description}
+	path={`/widgets/${widget.id}`}
+>
+	<a class="back" href="/#widgets"
+		><svg
+			width="14"
+			height="14"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg
+		>all widgets</a
+	>
+	<h1>{widget.id}</h1>
+	<p class="lede">{widget.description}</p>
+
+	<Examples widget={widget} />
+	<Builder widget={widget} />
+	<ParamsTable widget={widget} />
+</Base>

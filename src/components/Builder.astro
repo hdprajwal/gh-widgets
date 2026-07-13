@@ -1,0 +1,98 @@
+---
+import { WIDGET_VERSION } from '../data/widgets.js';
+
+interface Props {
+	widget: any;
+}
+
+const { widget } = Astro.props;
+---
+
+<h2 id="builder">Builder</h2>
+<p>Edit the fields. The previews and the snippet update as you type.</p>
+<form class="builder" id="builder-form">
+	{
+		widget.builder.map((f: any) =>
+			f.type === 'select' ? (
+				<label class={f.wide ? 'wide' : ''}>
+					{f.label || f.name}
+					<select name={f.name}>
+						{f.options.map((o: string) => (
+							<option value={o}>{o}</option>
+						))}
+					</select>
+				</label>
+			) : (
+				<label class={f.wide ? 'wide' : ''}>
+					{f.label || f.name}
+					<input
+						name={f.name}
+						type={f.type === 'number' ? 'number' : 'text'}
+						value={f.value}
+						placeholder={f.placeholder}
+					/>
+				</label>
+			)
+		)
+	}
+</form>
+<div class="preview">
+	<img id="preview-dark" alt="dark preview" />
+	<img id="preview-light" alt="light preview" />
+</div>
+<div class="snippet-head">
+	<span>README snippet, auto dark/light</span>
+	<button class="copy" id="copy" type="button">copy</button>
+</div>
+<pre id="snippet"></pre>
+
+<script is:inline define:vars={{ route: widget.route, version: WIDGET_VERSION, widgetId: widget.id }}>
+	(function () {
+		var form = document.getElementById('builder-form');
+		var darkImg = document.getElementById('preview-dark');
+		var lightImg = document.getElementById('preview-light');
+		var snippet = document.getElementById('snippet');
+		var copy = document.getElementById('copy');
+		var t;
+
+		function build(mode) {
+			var p = new URLSearchParams();
+			new FormData(form).forEach(function (v, k) {
+				if (v) p.append(k, v);
+			});
+			p.set('mode', mode);
+			return location.origin + route + '?' + p.toString();
+		}
+
+		function update() {
+			var dark = build('dark');
+			var light = build('light');
+			darkImg.src = dark + '&v=' + version;
+			lightImg.src = light + '&v=' + version;
+			var title = new FormData(form).get('title') || new FormData(form).get('repo') || widgetId;
+			snippet.textContent =
+				'<p align="center">\n' +
+				'  <picture>\n' +
+				'    <source media="(prefers-color-scheme: dark)" srcset="' + dark.split('&').join('&amp;') + '" />\n' +
+				'    <img alt="' + title + '" src="' + light.split('&').join('&amp;') + '" />\n' +
+				'  </picture>\n' +
+				'</p>';
+		}
+
+		form.addEventListener('input', function () {
+			clearTimeout(t);
+			t = setTimeout(update, 300);
+		});
+
+		copy.addEventListener('click', function () {
+			navigator.clipboard.writeText(snippet.textContent).then(function () {
+				copy.textContent = 'copied';
+				setTimeout(function () {
+					copy.textContent = 'copy';
+				}, 1200);
+			});
+		});
+
+		update();
+	})();
+</script>

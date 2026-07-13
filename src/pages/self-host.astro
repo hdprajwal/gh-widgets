@@ -1,0 +1,123 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base
+	title="Run your own · gh-widgets"
+	description="Fork gh-widgets and run your own README widget service on Cloudflare Workers. Free tier, one deploy command, optional custom domain."
+	path="/self-host"
+>
+	<a class="back" href="/"
+		><svg
+			width="14"
+			height="14"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg
+		>back to gh-widgets</a
+	>
+	<h1>Run your own</h1>
+	<p class="lede">
+		<span class="ink">gh-widgets</span> is one Cloudflare Worker plus a static site. There is no
+		database and no secret to configure beyond an optional GitHub token. Fork it, deploy it, and
+		your READMEs use a service only you control. It fits easily in Cloudflare's free tier.
+	</p>
+
+	<h2>1. Fork and clone</h2>
+	<p>
+		Fork <a href="https://github.com/hdprajwal/gh-widgets" target="_blank" rel="noopener"
+			>hdprajwal/gh-widgets</a
+		>
+		on GitHub, then clone your fork:
+	</p>
+	<pre><code>git clone https://github.com/&lt;you&gt;/gh-widgets
+cd gh-widgets
+npm install</code></pre>
+
+	<h2>2. Run it locally</h2>
+	<p>
+		Two terminals. One runs the SVG worker, the other runs the site with hot reload; the site
+		proxies image requests to the worker:
+	</p>
+	<pre><code>npx wrangler dev   <span class="c"># the SVG API on :8787</span>
+npm run dev        <span class="c"># the site on :4321</span></code></pre>
+	<p>
+		Or build the site and serve everything the way production does, from one command:
+	</p>
+	<pre><code>npm run preview</code></pre>
+
+	<h2>3. Deploy to Cloudflare</h2>
+	<p>
+		You need a free <a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener"
+			>Cloudflare account</a
+		>. Before deploying, open <code>wrangler.jsonc</code> and <span class="ink"
+			>remove the <code>routes</code> block</span
+		>. It points the worker at this site's domain, which your account does not own:
+	</p>
+	<pre><code><span class="c">// wrangler.jsonc: delete these lines in your fork</span>
+"routes": [
+  {'{'} "pattern": "gh-widgets.hdprajwal.dev", "custom_domain": true {'}'}
+],</code></pre>
+	<p>Then log in, build, and deploy:</p>
+	<pre><code>npx wrangler login
+npm run build
+npx wrangler deploy</code></pre>
+	<p>
+		The first deploy prints your URL:
+		<code>https://gh-widgets.&lt;your-subdomain&gt;.workers.dev</code>. That is it. The site, the
+		builders, and the SVG API are all live.
+	</p>
+
+	<h2>4. Recommended: GitHub token</h2>
+	<p>
+		The stars, license, and release badges call the GitHub API. Without a token, GitHub allows 60
+		requests an hour per IP, and Cloudflare's egress IPs are shared, so those badges will often
+		show <span class="ink">rate limited</span> in production. Create a fine-grained token with
+		"Public repositories (read-only)" access and no other permissions, then:
+	</p>
+	<pre><code>npx wrangler secret put GITHUB_TOKEN</code></pre>
+
+	<h2>5. Optional: custom domain</h2>
+	<p>
+		If you have a domain on Cloudflare, add the <code>routes</code> block back with your own
+		hostname and deploy again. Cloudflare creates the DNS record and the certificate for you:
+	</p>
+	<pre><code>"routes": [
+  {'{'} "pattern": "widgets.example.com", "custom_domain": true {'}'}
+],</code></pre>
+
+	<h2>6. Use it in a README</h2>
+	<p>
+		Open a widget page on your deployed site, set it up in the builder, and copy the
+		<code>&lt;picture&gt;</code> snippet it generates. GitHub shows the dark or light version to
+		match each visitor's theme.
+	</p>
+
+	<h2>Good to know</h2>
+	<ul>
+		<li>
+			<span class="ink">Cost.</span> The free Workers plan includes 100,000 requests a day, and
+			generated images are cached on Cloudflare's edge for 30 minutes, and by GitHub's image proxy
+			besides. A personal instance will not get near the limit.
+		</li>
+		<li>
+			<span class="ink">Self-contained.</span> The worker only calls GitHub (for the stats badges)
+			and jsDelivr (for the optional <code>logo</code> parameter, cached 30 days). Widgets that use
+			neither never call anything.
+		</li>
+		<li>
+			<span class="ink">Adding widgets.</span> Write a render function in
+			<code>worker.js</code>, register its route, and describe it in
+			<code>src/data/widgets.js</code>. The site builds its widget pages, examples, builders, and
+			API docs from that file.
+		</li>
+		<li>
+			<span class="ink">No tracking.</span> No analytics, no cookies, and no logs of your README
+			traffic beyond Cloudflare's standard request metrics.
+		</li>
+	</ul>
+</Base>

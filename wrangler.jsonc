@@ -3,7 +3,7 @@
   "name": "gh-widgets",
   "main": "worker.js",
   "assets": {
-    "directory": "./public"
+    "directory": "./dist"
   },
   "compatibility_date": "2026-07-13",
   "routes": [

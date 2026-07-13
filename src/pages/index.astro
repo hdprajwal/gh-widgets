@@ -1,0 +1,55 @@
+---
+import Base from '../layouts/Base.astro';
+import { WIDGET_MANIFEST } from '../data/widgets.js';
+---
+
+<Base
+	title="gh-widgets · self-hosted README widgets"
+	description="Self-hosted SVG widgets for GitHub READMEs. Header images, badges, and GitHub stats. One Cloudflare Worker you can fork and deploy yourself."
+	path="/"
+>
+	<h1>gh-widgets</h1>
+	<p class="lede">
+		Self-hosted SVG widgets for GitHub READMEs. <span class="ink">gh-widgets</span> is one
+		Cloudflare Worker that renders header images, badges, and GitHub stats from options you pass
+		in the URL. Your README never depends on someone else's image service.
+	</p>
+
+	<h2>Auto dark/light in a README</h2>
+	<p>
+		Wrap two image URLs in a <code>&lt;picture&gt;</code> tag and GitHub shows the one that matches
+		the viewer's theme. Every widget's builder generates this snippet for you.
+	</p>
+	<pre><code>&lt;p align="center"&gt;
+  &lt;picture&gt;
+    &lt;source media="(prefers-color-scheme: dark)"
+            srcset="https://gh-widgets.hdprajwal.dev/header/graph.svg?title=...&amp;amp;mode=dark" /&gt;
+    &lt;img alt="my project"
+         src="https://gh-widgets.hdprajwal.dev/header/graph.svg?title=...&amp;amp;mode=light" /&gt;
+  &lt;/picture&gt;
+&lt;/p&gt;</code></pre>
+
+	<h2>Run your own</h2>
+	<p>
+		You do not have to depend on this instance. gh-widgets is one worker with no database and no
+		build secrets. Fork it and deploy your own copy on Cloudflare's free tier in a few minutes.
+		<a href="/self-host">Here is the full walkthrough</a>.
+	</p>
+
+	<h2 id="widgets">Widgets</h2>
+	<p>
+		Routes follow <code>/&lt;widget&gt;/&lt;variant&gt;.svg</code>, so adding a new widget never
+		breaks an existing URL. Click a widget for examples, a builder, and its API reference.
+	</p>
+	<div class="widget-grid">
+		{
+			WIDGET_MANIFEST.map((w) =>
+				w.status === 'working' ? (
+					<a href={`/widgets/${w.id}`} title={w.description}>{w.id}</a>
+				) : (
+					<span class="soon" title="coming soon">{w.id}</span>
+				)
+			)
+		}
+	</div>
+</Base>

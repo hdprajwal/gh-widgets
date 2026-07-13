@@ -1,0 +1,23 @@
+---
+import { WIDGET_VERSION } from '../data/widgets.js';
+
+interface Props {
+	widget: any;
+}
+
+const { widget } = Astro.props;
+---
+
+<h2>Examples</h2>
+<p>Every image below is rendered live by this worker.</p>
+{
+	widget.examples.map((ex: any) => {
+		const url = `${widget.route}?${ex.query}`;
+		return (
+			<div class="example">
+				<img src={`${url}&v=${WIDGET_VERSION}`} alt={ex.alt} loading="lazy" />
+				<pre><code>{url}</code></pre>
+			</div>
+		);
+	})
+}

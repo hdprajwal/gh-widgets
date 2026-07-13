@@ -1,3 +1,7 @@
+# astro
+dist/
+.astro/
+
 # wrangler
 .wrangler/
 .dev.vars

@@ -17,31 +17,50 @@ dark/light `<picture>` snippet for you, and the full API reference. The
 
 ## Run locally
 
-The worker is one file, so local development is just wrangler:
+The SVG API is `worker.js`. The site is an Astro project in `src/` that
+builds to static files in `dist/`, served by the same worker deploy.
 
 ```bash
-cd gh-widgets
-npx wrangler dev
+npm install
 ```
 
-Then open:
+For day-to-day work, run two terminals. The site proxies image requests to
+the worker, and both reload on save:
 
-- `http://localhost:8787/` for the landing page and the builder
-- `http://localhost:8787/header/graph.svg?title=hello&subtitle=world` for the raw SVG
+```bash
+npx wrangler dev   # the SVG API on :8787
+npm run dev        # the site on :4321
+```
 
-Wrangler reloads on its own when you save a file.
+To serve everything the way production does, from one command:
+
+```bash
+npm run preview    # builds the site, then wrangler dev serves dist + worker
+```
+
+The raw SVG API works either way:
+`http://localhost:8787/header/graph.svg?title=hello&subtitle=world`.
 
 ## Deploy
 
 ```bash
+npm run build
 npx wrangler deploy
 ```
+
+If you deploy through Cloudflare's git integration, set the build command
+to `npm run build` in the worker's Settings, under Builds.
 
 The first deploy gives you a `gh-widgets.<account>.workers.dev` URL.
 `wrangler.jsonc` also declares `gh-widgets.hdprajwal.dev` as a custom domain.
 That binds on deploy as long as the `hdprajwal.dev` zone is on the same
 Cloudflare account. Remove the `routes` block if you do not want it, and if
 you forked this repo, remove it before your first deploy.
+
+The stars, license, and release badges need a `GITHUB_TOKEN` secret in
+production (`npx wrangler secret put GITHUB_TOKEN`), because
+unauthenticated GitHub API calls share rate limits across Cloudflare's
+egress IPs.
 
 ## API
 
@@ -98,13 +117,13 @@ Routes follow `/<widget>/<variant>.svg`. Two steps:
    };
    ```
 
-2. In `public/widgets.js`, add an entry with `status: 'working'`, the route,
-   examples, param docs, and builder fields. The landing page builds its
-   status table, tabs, examples, builder, and API docs from that file. There
-   is no HTML to touch.
+2. In `src/data/widgets.js`, add an entry with `status: 'working'`, the
+   route, examples, param docs, and builder fields. The site builds the
+   widget's page, examples, builder, and API docs from that file. There is
+   no HTML to touch.
 
 Widgets you have not built yet can sit in the file with `status: 'soon'`.
-They show up in the status table and as disabled tabs.
+They show up in the status table as coming soon.
 
 Adding a widget never changes an existing URL, so published READMEs keep
 working.

@@ -1,18 +1,18 @@
-// Widget manifest: the landing page (tabs, status table, examples, builders,
-// API tables) is rendered entirely from this data by app.js.
+// Widget manifest: the site (status table, widget pages, examples, builders,
+// API tables) renders entirely from this data.
 //
 // To add a widget:
 //   1. Implement its render function in worker.js and register it in WIDGETS.
 //   2. Add an entry here with status 'working' and fill in route/examples/
-//      params/builder. Entries with status 'soon' render as disabled tabs.
+//      params/builder. Entries with status 'soon' show as coming soon.
 //
 // Builder field types: 'text', 'number', 'select' (needs options).
 
 // Bump this whenever a widget's rendering changes. It is appended to the
 // example and preview image URLs so browsers do not show stale cached SVGs.
-const WIDGET_VERSION = '4';
+export const WIDGET_VERSION = '4';
 
-const WIDGET_MANIFEST = [
+export const WIDGET_MANIFEST = [
 	{
 		id: 'header',
 		status: 'working',
@@ -114,7 +114,7 @@ const WIDGET_MANIFEST = [
 		route: '/group/badges.svg',
 		examples: [
 			{
-				alt: 'three badges in one image',
+				alt: 'three badges in one pill',
 				query: 'b=label:build|message:passing|color:3fb950&b=label:version|message:v1.2.0&b=label:license|message:Apache-2.0|color:a78bfa',
 			},
 			{

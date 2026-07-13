@@ -4,9 +4,23 @@
 	--ink-muted: #a0a0a0;
 	--ink-subtle: #8f8f8f;
 	--ink-faint: #7d7d7d;
+	--ink-disabled: #4d4d4d;
 	--line: #1f1f1f;
 	--surface: #0e0e0e;
 	--accent: #47a8ff;
+	color-scheme: dark;
+}
+:root[data-theme='light'] {
+	--bg: #ffffff;
+	--ink: #18181b;
+	--ink-muted: #52525b;
+	--ink-subtle: #71717a;
+	--ink-faint: #8f8f8f;
+	--ink-disabled: #c4c4c9;
+	--line: #e4e4e7;
+	--surface: #fafafa;
+	--accent: #2563eb;
+	color-scheme: light;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -92,30 +106,33 @@ td.desc { color: var(--ink-faint); font-family: 'Geist', ui-sans-serif, system-u
 td.status { white-space: nowrap; width: 130px; }
 td.status.live { color: #3fb950; }
 td.status.soon { color: var(--ink-faint); }
-.tabs {
-	margin-top: 48px;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 12px 24px;
+.widget-grid {
+	margin-top: 24px;
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 28px 24px;
+	font-size: 15px;
+	font-weight: 500;
 }
-.tab { white-space: nowrap; }
-.tab {
+.widget-grid a { color: var(--ink); text-decoration: none; transition: color 0.15s; }
+.widget-grid a:hover { color: var(--accent); }
+.widget-grid .soon { color: var(--ink-disabled); cursor: default; }
+@media (max-width: 560px) {
+	.widget-grid { grid-template-columns: repeat(2, 1fr); }
+}
+button.theme-toggle {
 	background: none;
 	border: 0;
-	padding: 0 0 4px;
-	font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
-	font-size: 15px;
-	font-weight: 600;
+	padding: 0;
 	color: var(--ink-subtle);
-	border-bottom: 1px solid transparent;
 	cursor: pointer;
+	display: flex;
+	align-items: center;
 	transition: color 0.15s;
 }
-.tab:hover:not(:disabled) { color: var(--ink); }
-.tab.active { color: var(--ink); border-bottom-color: var(--ink); }
-.tab:disabled { cursor: default; color: #4d4d4d; }
-.tab-panel { display: block; }
-.tab-panel[hidden] { display: none; }
+button.theme-toggle:hover { color: var(--ink); }
+:root[data-theme='light'] .icon-moon { display: none; }
+:root:not([data-theme='light']) .icon-sun { display: none; }
 form.builder {
 	margin-top: 12px;
 	display: grid;

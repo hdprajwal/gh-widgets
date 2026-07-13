@@ -1,0 +1,29 @@
+---
+interface Props {
+	widget: any;
+}
+
+const { widget } = Astro.props;
+---
+
+<h2 id="api">API</h2>
+<p>
+	Each widget is one endpoint, and every option is a query parameter. Responses are SVG images,
+	cached on Cloudflare's edge, and usable from any site.
+</p>
+<pre><code>GET {widget.route}</code></pre>
+<div class="table-wrap">
+	<table>
+		<tbody>
+			{
+				widget.params.map((p: any) => (
+					<tr>
+						<td class="cmd">{p.name}</td>
+						<td class="mode">{p.values}</td>
+						<td class="desc">{p.desc}</td>
+					</tr>
+				))
+			}
+		</tbody>
+	</table>
+</div>
